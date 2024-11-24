@@ -1,0 +1,97 @@
+---
+import Layout from '../../../../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+import { getLangFromUrl, useTranslations } from '../../../../i18n/utils';
+import { languages } from '../../../../i18n/ui';
+
+// Add prerender directive
+export const prerender = true;
+
+export async function getStaticPaths() {
+  const posts = await getCollection('blog');
+  const paths = [];
+
+  // Generate paths for each language
+  for (const lang of Object.keys(languages)) {
+    // Filter posts for current language
+    const langPosts = posts.filter(post => post.slug.startsWith(`${lang}/`));
+    
+    // Get unique tags for this language's posts
+    const langTags = [...new Set(langPosts.flatMap(post => post.data.tags || []))];
+    
+    // Create a path for each tag in this language
+    for (const tag of langTags) {
+      const tagPosts = langPosts.filter(post => post.data.tags?.includes(tag));
+      paths.push({
+        params: { lang, tag },
+        props: { posts: tagPosts }
+      });
+    }
+  }
+
+  return paths;
+}
+
+const { tag } = Astro.params;
+const { posts } = Astro.props;
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+const sortedPosts = posts.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+---
+
+<Layout title={`${t('blog.postsTagged')} #${tag}`}>
+  <div class="mb-8">
+    <div class="flex items-center gap-4 mb-6">
+      <a href={`/${lang}/blog`} class="text-blue-600 dark:text-blue-400 hover:underline">
+        ← {t('nav.blog')}
+      </a>
+    </div>
+    
+    <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+      {t('blog.postsTagged')} #{tag}
+    </h1>
+    
+    {sortedPosts.length > 0 ? (
+      <div class="space-y-8">
+        {sortedPosts.map(post => (
+          <article class="border dark:border-gray-700 rounded-lg p-6 hover:shadow-lg transition-shadow">
+            <h2 class="text-xl font-bold mb-2">
+              <a href={`/${lang}/blog/${post.slug.split('/')[1]}`} class="text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400">
+                {post.data.title}
+              </a>
+            </h2>
+            <p class="text-gray-600 dark:text-gray-400 mb-4">{post.data.description}</p>
+            <div class="flex flex-wrap gap-2 mb-4">
+              {post.data.tags?.map(t => (
+                <a
+                  href={`/${lang}/blog/tags/${t}`}
+                  class={`text-sm px-3 py-1 rounded-full ${
+                    t === tag
+                      ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300'
+                      : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300'
+                  } hover:bg-gray-200 dark:hover:bg-gray-700`}
+                >
+                  #{t}
+                </a>
+              ))}
+            </div>
+            <div class="text-sm text-gray-500 dark:text-gray-500">
+              <time datetime={post.data.pubDate.toISOString()}>
+                {post.data.pubDate.toLocaleDateString(lang, {
+                  year: 'numeric',
+                  month: 'short',
+                  day: 'numeric',
+                })}
+              </time>
+            </div>
+          </article>
+        ))}
+      </div>
+    ) : (
+      <p class="text-gray-600 dark:text-gray-400">
+        {t('blog.noPostsFound')}
+      </p>
+    )}
+  </div>
+</Layout>

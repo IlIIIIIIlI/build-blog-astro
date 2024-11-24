@@ -1,0 +1,70 @@
+---
+import type { MarkdownHeading } from 'astro';
+
+interface Props {
+  headings: MarkdownHeading[];
+}
+
+const { headings } = Astro.props;
+const hasHeadings = headings && headings.length > 0;
+---
+
+{hasHeadings && (
+  <nav
+    id="toc"
+    class="hidden lg:block sticky top-24 w-64 max-h-[calc(100vh-8rem)] overflow-y-auto"
+    aria-label="Table of Contents"
+  >
+    <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-lg border dark:border-gray-700">
+      <h2 class="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
+        Table of Contents
+      </h2>
+      <ul class="space-y-2">
+        {headings.map(heading => (
+          <li class="toc-item" style={`margin-left: ${(heading.depth - 1) * 1}rem`}>
+            <a
+              href={`#${heading.slug}`}
+              class="block text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400"
+            >
+              {heading.text}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </nav>
+)}
+
+<style>
+  .toc-item a.active {
+    @apply text-blue-600 dark:text-blue-400 font-medium;
+  }
+</style>
+
+<script>
+  const toc = document.getElementById('toc');
+  if (toc) {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          const id = entry.target.getAttribute('id');
+          const tocLink = toc.querySelector(`a[href="#${id}"]`);
+          
+          if (tocLink) {
+            if (entry.isIntersecting) {
+              document.querySelectorAll('#toc .toc-item a').forEach(link => {
+                link.classList.remove('active');
+              });
+              tocLink.classList.add('active');
+            }
+          }
+        });
+      },
+      { rootMargin: '-20% 0px -35% 0px' }
+    );
+
+    document.querySelectorAll('h2, h3, h4, h5, h6').forEach(heading => {
+      observer.observe(heading);
+    });
+  }
+</script>

@@ -1,0 +1,251 @@
+---
+import Layout from './Layout.astro';
+import type { MarkdownHeading } from 'astro';
+import { getLangFromUrl } from '../i18n/utils';
+
+interface Props {
+  title: string;
+  description?: string;
+  pubDate?: Date;
+  updatedDate?: Date;
+  tags?: string[];
+  heroImage?: string;
+  protected?: boolean;
+  headings: MarkdownHeading[];
+  readingTime: string;
+}
+
+const { 
+  title, 
+  description, 
+  pubDate, 
+  updatedDate, 
+  tags = [], 
+  headings,
+  readingTime 
+} = Astro.props;
+
+const lang = getLangFromUrl(Astro.url);
+---
+
+
+<Layout title={title} description={description}>
+  <article class="prose dark:prose-invert max-w-none prose-pre:bg-gray-800 prose-pre:border prose-pre:border-gray-700">
+    <div class="mb-8 not-prose">
+      <h1 class="text-4xl font-bold text-gray-900 dark:text-white mb-4">{title}</h1>
+      {tags.length > 0 && (
+        <div class="flex flex-wrap gap-2 mb-4">
+          {tags.map(tag => (
+            <a
+              href={`/${lang}/blog/tags/${tag}`}
+              class="text-sm px-3 py-1 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"
+            >
+              #{tag}
+            </a>
+        ))}
+        </div>
+      )}
+      <div class="mb-4">
+        <slot name="heroImage" />
+      </div>
+      <div class="text-gray-600 dark:text-gray-400">
+        <time datetime={pubDate?.toISOString()}>
+          {pubDate?.toLocaleDateString('en-us', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+          })}
+        </time>
+        <span class="mx-2">•</span>
+        <span>{readingTime}</span>
+        {updatedDate && (
+          <div class="mt-1 text-sm">
+            Last updated on <time datetime={updatedDate.toISOString()}>
+              {updatedDate.toLocaleDateString('en-us', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+              })}
+            </time>
+          </div>
+        )}
+      </div>
+    </div>
+
+    {/* TOC */}
+    {headings.length > 0 && (
+      <div
+        id="toc-container"
+        class="toc bg-white dark:bg-gray-800 p-4 rounded-lg shadow-lg border dark:border-gray-700 w-64 fixed top-24 left-4 cursor-move transition-all duration-300"
+        draggable="true"
+      >
+        <div class="flex justify-between items-center mb-4">
+          <div class="font-semibold text-gray-900 dark:text-white">Table of Contents</div>
+          <button
+            id="toc-toggle"
+            class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M10 6L4 12H16L10 6Z" />
+            </svg>
+          </button>
+        </div>
+        <div id="toc-content">
+          <ul class="space-y-2">
+            {headings.map(heading => (
+              <li class={`toc-item depth-${heading.depth}`}>
+                <a
+                  href={`#${heading.slug}`}
+                  class="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white block transition-colors duration-200"
+                  style={`margin-left: ${(heading.depth - 1) * 1}rem`}
+                >
+                  {heading.text}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    )}
+
+    <slot />
+  </article>
+</Layout>
+
+<style>
+  .toc {
+    transition: transform 0.3s ease;
+    z-index: 50;
+    opacity: 0;
+    animation: fade-in 0.3s ease-out forwards;
+  }
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  .toc-item a.active {
+    @apply text-blue-600 dark:text-blue-400 font-medium;
+  }
+</style>
+
+<script>
+  function initTOC() {
+    const tocContainer = document.getElementById('toc-container');
+    const tocToggle = document.getElementById('toc-toggle');
+    const tocContent = document.getElementById('toc-content');
+
+    if (!tocContainer || !tocToggle || !tocContent || !tocContainer.querySelector('li')) {
+      // If there are no headings, hide the TOC
+      tocContainer?.remove();
+      return;
+    }
+
+    // Load saved position and side
+    const savedPosition = localStorage.getItem('tocPosition');
+    const savedSide = localStorage.getItem('tocSide') || 'left';
+    
+    if (savedPosition) {
+      const { x, y } = JSON.parse(savedPosition);
+      tocContainer.style.transform = `translate(${x}px, ${y}px)`;
+    }
+
+    // Set initial side
+    if (savedSide === 'right') {
+      tocContainer.style.left = 'auto';
+      tocContainer.style.right = '1rem';
+    }
+
+    // Toggle content
+    tocToggle.addEventListener('click', () => {
+      tocContent.classList.toggle('hidden');
+      tocToggle.querySelector('svg').style.transform = tocContent.classList.contains('hidden') 
+        ? 'rotate(180deg)' 
+        : 'rotate(0deg)';
+    });
+
+    // Drag functionality
+    let isDragging = false;
+    let currentX;
+    let currentY;
+    let initialX;
+    let initialY;
+    let xOffset = 0;
+    let yOffset = 0;
+
+    // Initialize position from localStorage
+    if (savedPosition) {
+      const { x, y } = JSON.parse(savedPosition);
+      xOffset = x;
+      yOffset = y;
+    }
+
+    tocContainer.addEventListener('dragstart', dragStart);
+    document.addEventListener('dragover', drag);
+    document.addEventListener('dragend', dragEnd);
+
+    function dragStart(e) {
+      initialX = e.clientX - xOffset;
+      initialY = e.clientY - yOffset;
+      isDragging = true;
+    }
+
+    function drag(e) {
+      if (isDragging) {
+        e.preventDefault();
+        currentX = e.clientX - initialX;
+        currentY = e.clientY - initialY;
+        xOffset = currentX;
+        yOffset = currentY;
+        tocContainer.style.transform = `translate(${currentX}px, ${currentY}px)`;
+      }
+    }
+
+    function dragEnd(e) {
+      initialX = currentX;
+      initialY = currentY;
+      isDragging = false;
+
+      // Determine which side the TOC is closer to
+      const containerRect = tocContainer.getBoundingClientRect();
+      const windowMiddle = window.innerWidth / 2;
+      const side = containerRect.left < windowMiddle ? 'left' : 'right';
+      
+      localStorage.setItem('tocSide', side);
+      localStorage.setItem('tocPosition', JSON.stringify({ x: xOffset, y: yOffset }));
+    }
+
+    // Highlight current section
+    const observerOptions = {
+      rootMargin: '0px 0px -40% 0px',
+      threshold: 1.0,
+    };
+
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        const id = entry.target.getAttribute('id');
+        const tocItem = document.querySelector(`a[href="#${id}"]`);
+        if (tocItem) {
+          if (entry.isIntersecting) {
+            document.querySelectorAll('.toc-item a').forEach(item => {
+              item.classList.remove('active');
+            });
+            tocItem.classList.add('active');
+          }
+        }
+      });
+    }, observerOptions);
+
+    document.querySelectorAll('h2, h3, h4, h5, h6').forEach((heading) => {
+      observer.observe(heading);
+    });
+  }
+
+  // Initialize TOC when the document is ready
+  document.addEventListener('DOMContentLoaded', initTOC);
+</script>

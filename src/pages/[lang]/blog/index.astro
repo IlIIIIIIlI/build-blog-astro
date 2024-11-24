@@ -1,0 +1,108 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+import { getLangFromUrl, useTranslations } from '../../../i18n/utils';
+import { languages } from '../../../i18n/ui';
+
+export async function getStaticPaths() {
+  return Object.keys(languages).map(lang => ({ params: { lang } }));
+}
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+const posts = (await getCollection('blog', ({ id }) => {
+  return id.startsWith(`${lang}/`);
+})).sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+
+const allTags = [...new Set(posts.flatMap(post => post.data.tags || []))].sort();
+---
+
+<Layout title={`${t('nav.blog')} - TechBlog`}>
+  <div class="mb-8">
+    <div class="flex justify-between items-center mb-6">
+      <h1 class="text-3xl font-bold text-gray-900 dark:text-white">{t('blog.latest')}</h1>
+      <select
+        id="sort-order"
+        class="px-4 py-2 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+      >
+        <option value="desc">{t('blog.sortNewest')}</option>
+        <option value="asc">{t('blog.sortOldest')}</option>
+      </select>
+    </div>
+
+    <!-- Tags at the top -->
+    <div class="bg-white dark:bg-gray-800 p-6 rounded-lg border dark:border-gray-700 mb-8">
+      <h2 class="text-lg font-semibold mb-4 text-gray-900 dark:text-white">{t('blog.tags')}</h2>
+      <div class="flex flex-wrap gap-2">
+        {allTags.map(tag => (
+          <a
+            href={`/${lang}/blog/tags/${tag}`}
+            class="text-sm px-3 py-1 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"
+          >
+            #{tag}
+          </a>
+        ))}
+      </div>
+    </div>
+
+    <!-- Posts list -->
+    <div id="posts-container" class="space-y-8">
+      {posts.map(post => (
+        <article class="border dark:border-gray-700 rounded-lg p-6 hover:shadow-lg transition-shadow">
+          <h2 class="text-xl font-bold mb-2">
+            <a 
+              href={`/${lang}/blog/${post.slug.split('/')[1]}`} 
+              class="text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400"
+            >
+              {post.data.title}
+              {post.data.protected && (
+                <span class="ml-2 text-sm px-2 py-1 bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 rounded-full">
+                  {t('password.protected')}
+                </span>
+              )}
+            </a>
+          </h2>
+          <p class="text-gray-600 dark:text-gray-400 mb-4">{post.data.description}</p>
+          <div class="flex flex-wrap gap-2 mb-4">
+            {post.data.tags?.map(tag => (
+              <a
+                href={`/${lang}/blog/tags/${tag}`}
+                class="text-sm px-3 py-1 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"
+              >
+                #{tag}
+              </a>
+            ))}
+          </div>
+          <div class="text-sm text-gray-500 dark:text-gray-500">
+            <time datetime={post.data.pubDate.toISOString()}>
+              {post.data.pubDate.toLocaleDateString(lang, {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+              })}
+            </time>
+          </div>
+        </article>
+      ))}
+    </div>
+  </div>
+</Layout>
+
+<script>
+  const sortOrder = document.getElementById('sort-order');
+  const postsContainer = document.getElementById('posts-container');
+  const posts = [...postsContainer.children];
+
+  sortOrder.addEventListener('change', () => {
+    const isAscending = sortOrder.value === 'asc';
+    const sortedPosts = posts.sort((a, b) => {
+      const dateA = new Date(a.querySelector('time').dateTime);
+      const dateB = new Date(b.querySelector('time').dateTime);
+      return isAscending ? dateA - dateB : dateB - dateA;
+    });
+
+    postsContainer.innerHTML = '';
+    sortedPosts.forEach(post => postsContainer.appendChild(post));
+  });
+</script>

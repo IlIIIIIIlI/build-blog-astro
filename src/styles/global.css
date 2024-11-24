@@ -1,0 +1,30 @@
+html {
+  visibility: visible;
+  opacity: 1;
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom scrollbar styles */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-gray-100 dark:bg-gray-800;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-gray-400 dark:bg-gray-600 rounded-full;
+}
+
+/* Active TOC item */
+.toc-item a.active {
+  @apply text-blue-600 dark:text-blue-400 font-medium;
+}

@@ -1,0 +1,111 @@
+---
+import { getCollection } from 'astro:content';
+import BlogPost from '../../../layouts/BlogPost.astro';
+import Layout from '../../../layouts/Layout.astro';
+import { getReadingTime } from '../../../utils/getReadingTime';
+import { getLangFromUrl, useTranslations } from '../../../i18n/utils';
+
+const { lang, slug } = Astro.params;
+const t = useTranslations(getLangFromUrl(Astro.url));
+
+// Get all blog posts
+const posts = await getCollection('blog');
+const post = posts.find(post => {
+  const [postLang, postSlug] = post.slug.split('/');
+  return postLang === lang && postSlug === slug;
+});
+
+if (!post) {
+  return Astro.redirect('/404');
+}
+
+const { Content, headings } = await post.render();
+const readingTime = getReadingTime(post.body);
+
+// Password handling
+let error = '';
+let isAuthenticated = false;
+
+if (post.data.protected) {
+  // 创建一个安全的 cookie 名称
+  const cookieName = `auth_${Buffer.from(post.slug).toString('base64').replace(/[^a-zA-Z0-9]/g, '')}`;
+  isAuthenticated = Astro.cookies.get(cookieName)?.value === 'true';
+
+  if (Astro.request.method === 'POST') {
+    try {
+      const formData = await Astro.request.formData();
+      const password = formData.get('password');
+
+      if (password === post.data.password) {
+        Astro.cookies.set(cookieName, 'true', {
+          path: '/',
+          maxAge: 60 * 60 * 24 * 7, // 1 week
+          sameSite: 'lax',
+          secure: import.meta.env.PROD,
+          httpOnly: true
+        });
+        isAuthenticated = true;
+      } else {
+        error = t('password.invalid');
+      }
+    } catch (err) {
+      console.error('Form processing error:', err);
+      error = 'An error occurred. Please try again.';
+    }
+  }
+}
+---
+
+{post.data.protected && !isAuthenticated ? (
+  <Layout title={t('password.required')}>
+    <div class="max-w-md mx-auto mt-16">
+      <div class="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md">
+        <h1 class="text-2xl font-bold mb-6 text-gray-900 dark:text-white">
+          {t('password.protected')}
+        </h1>
+        <p class="text-gray-600 dark:text-gray-400 mb-6">{post.data.title}</p>
+        
+        <form method="POST" class="space-y-6">
+          <div>
+            <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              {t('password.enter')}
+            </label>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              required
+              class="w-full px-4 py-2 border dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+            />
+          </div>
+          
+          <button
+            type="submit"
+            class="w-full bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+          >
+            {t('password.submit')}
+          </button>
+        </form>
+
+        {error && (
+          <div class="mt-4 text-red-600 dark:text-red-400 text-sm">
+            {error}
+          </div>
+        )}
+      </div>
+    </div>
+  </Layout>
+) : (
+  <BlogPost  
+  title={post.data.title}
+  description={post.data.description}
+  pubDate={post.data.pubDate}
+  updatedDate={post.data.updatedDate}
+  tags={post.data.tags}
+  heroImage={post.data.heroImage}
+  protected={post.data.protected}
+  headings={headings}
+  readingTime={readingTime}>
+    <Content />
+  </BlogPost>
+)}

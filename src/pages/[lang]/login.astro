@@ -1,0 +1,63 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { getLangFromUrl, useTranslations } from '../../i18n/utils';
+import { languages } from '../../i18n/ui';
+
+export async function getStaticPaths() {
+  return Object.keys(languages).map(lang => ({ params: { lang } }));
+}
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+---
+
+<Layout title={`${t('login.title')} - TechBlog`}>
+  <div class="max-w-md mx-auto mt-8">
+    <div class="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md">
+      <h1 class="text-2xl font-bold mb-6 text-gray-900 dark:text-white">{t('login.title')}</h1>
+      
+      <form id="login-form" class="space-y-6">
+        <div>
+          <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            {t('login.password')}
+          </label>
+          <input
+            type="password"
+            id="password"
+            required
+            class="w-full px-4 py-2 border dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+          />
+        </div>
+        
+        <button
+          type="submit"
+          class="w-full bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+        >
+          {t('login.submit')}
+        </button>
+      </form>
+
+      <div id="error-message" class="mt-4 text-red-600 dark:text-red-400 text-sm hidden"></div>
+    </div>
+  </div>
+</Layout>
+
+<script>
+  const form = document.getElementById('login-form');
+  const errorMessage = document.getElementById('error-message');
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const password = (document.getElementById('password') as HTMLInputElement).value;
+
+    // In a real application, this would be a server-side check
+    if (password === 'your-secret-password') {
+      document.cookie = 'auth=true; path=/';
+      const redirectTo = new URLSearchParams(window.location.search).get('redirect') || '/';
+      window.location.href = redirectTo;
+    } else {
+      errorMessage.textContent = 'Invalid password';
+      errorMessage.classList.remove('hidden');
+    }
+  });
+</script>

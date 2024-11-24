@@ -1,0 +1,23 @@
+---
+import { getLangFromUrl, useTranslations } from '../i18n/utils';
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+---
+
+<section class="py-20 bg-gradient-to-br from-gray-50 to-white dark:from-gray-900 dark:to-gray-800">
+  <div class="max-w-4xl mx-auto px-4 text-center">
+    <h1 class="text-5xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400">
+      {t('hero.title')}
+    </h1>
+    <p class="text-xl text-gray-600 dark:text-gray-300 mb-8">
+      {t('hero.subtitle')}
+    </p>
+    <a
+      href={`/${lang}/blog`}
+      class="inline-block bg-blue-600 text-white px-8 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+    >
+      {t('hero.cta')}
+    </a>
+  </div>
+</section>

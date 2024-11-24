@@ -1,0 +1,27 @@
+{
+  "name": "tech-blog",
+  "type": "module",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "debug": "node scripts/debug-content.mjs"
+  },
+  "dependencies": {
+    "@astrojs/mdx": "^2.1.1",
+    "@astrojs/node": "^8.3.4",
+    "@astrojs/rss": "^4.0.5",
+    "@astrojs/sitemap": "^3.1.1",
+    "@astrojs/tailwind": "^5.1.0",
+    "@floating-ui/dom": "^1.6.3",
+    "@tailwindcss/typography": "^0.5.10",
+    "astro": "^4.5.0",
+    "js-yaml": "^4.1.0",
+    "reading-time": "^1.5.0",
+    "tailwindcss": "^3.4.1"
+  }
+}
