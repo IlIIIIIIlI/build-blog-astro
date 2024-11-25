@@ -27,7 +27,7 @@ const navItems = [
             pathname === `/${lang}${href}` ? 'font-bold' : ''
           }`}
         >
-          {t(label)}
+          {t(label as keyof typeof t)}
         </a>
       ))}
       <LanguagePicker />

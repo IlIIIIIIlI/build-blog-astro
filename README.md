@@ -1,5 +1,9 @@
 # Multilingual Tech Blog with Astro
 
+![alt text](image.png)
+
+![alt text](image-1.png)
+
 A modern, multilingual tech blog built with Astro, featuring dark mode, protected content, and i18n support. This project extends the Astro Basics template with advanced features.
 
 [![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/withastro/astro/tree/latest/examples/basics)
@@ -72,14 +76,15 @@ A modern, multilingual tech blog built with Astro, featuring dark mode, protecte
 
 All commands are run from the root of the project, from a terminal:
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
+| Command                    | Action                                           |
+| :------------------------- | :----------------------------------------------- |
+| `pnpm install`             | Installs dependencies                            |
+| `pnpm run dev`             | Starts local dev server at `localhost:4321`      |
+| `pnpm run build`           | Build your production site to `./dist/`          |
+| `pnpm run preview`         | Preview your build locally, before deploying     |
+| `pnpm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
+| `pnpm run astro -- --help` | Get help using the Astro CLI                     |
+| `pnpm run debug`           | Check content files and their frontmatter        |
 
 ## 🛠️ Quick Start
 
@@ -87,14 +92,14 @@ All commands are run from the root of the project, from a terminal:
 
 ```bash
 git clone https://github.com/IlIIIIIIlI/build-blog-astro.git
-cd multilingual-tech-blog
-npm install
+cd build-blog-astro
+pnpm install
 ```
 
 2. **Development**
 
 ```bash
-npm run dev
+pnpm run dev
 ```
 
 3. **Adding Content**
