@@ -2,21 +2,13 @@
   "version": 2,
   "buildCommand": "pnpm run build",
   "devCommand": "pnpm run dev",
-  "outputDirectory": "dist",
   "framework": "astro",
-  "builds": [
-    {
-      "src": "package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "zeroConfig": true
-      }
+  "functions": {
+    "api/*.ts": {
+      "runtime": "@vercel/node@3.0.0"
+    },
+    "src/pages/**/*.astro": {
+      "runtime": "@vercel/node@3.0.0"
     }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "/index.html"
-    }
-  ]
+  }
 }
