@@ -3,12 +3,5 @@
   "buildCommand": "pnpm run build",
   "devCommand": "pnpm run dev",
   "framework": "astro",
-  "functions": {
-    "api/*.ts": {
-      "runtime": "@vercel/node@3.0.0"
-    },
-    "src/pages/**/*.astro": {
-      "runtime": "@vercel/node@3.0.0"
-    }
-  }
+  "outputDirectory": "dist"
 }
