@@ -1,10 +1,10 @@
 ---
-title: "Advanced Security Patterns in Modern Web Development"
+title: "Advanced Security Patterns in Modern Web Development (password: s00001)"
 description: "An in-depth look at security patterns and best practices in modern web applications."
 pubDate: 2023-03-20
 tags: ["security", "web-development", "best-practices"]
 protected: true
-password: "secure123"
+password: "s00001"
 ---
 
 # Advanced Security Patterns in Modern Web Development
@@ -24,4 +24,4 @@ In this article, we'll explore advanced security patterns that are essential for
 
 ## Authentication Best Practices
 
-[Content continues...]
+test

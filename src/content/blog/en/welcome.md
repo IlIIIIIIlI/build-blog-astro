@@ -5,8 +5,6 @@ pubDate: 2024-03-19
 tags: ["welcome", "introduction", "features"]
 ---
 
-# Welcome to My Tech Blog
-
 ## Introduction
 
 Welcome to my tech blog! This is where I'll be sharing my thoughts, experiences, and insights about software development, technology trends, and best practices.
