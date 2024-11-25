@@ -11,8 +11,16 @@ export default defineConfig({
   adapter: vercel({
     functionPerRoute: true,
     maxDuration: 60,
-    runtime: "nodejs20.18.2",
+    // runtime: "nodejs20.18.2",
   }),
+  vite: {
+    build: {
+      sourcemap: true,
+    },
+    ssr: {
+      noExternal: ["crypto-browserify"],
+    },
+  },
   site: "https://example.com",
   i18n: {
     defaultLocale: "en",
