@@ -11,7 +11,7 @@ export default defineConfig({
   adapter: vercel({
     functionPerRoute: true,
     maxDuration: 60,
-    runtime: "nodejs18.x",
+    runtime: "nodejs20.18.2",
   }),
   site: "https://example.com",
   i18n: {

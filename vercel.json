@@ -5,7 +5,7 @@
   "framework": "astro",
   "functions": {
     "api/*.js": {
-      "runtime": "nodejs18.x"
+      "runtime": "nodejs20.18.2"
     }
   }
 }
