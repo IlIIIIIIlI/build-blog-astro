@@ -8,7 +8,11 @@ import vercel from "@astrojs/vercel/serverless";
 
 export default defineConfig({
   output: "server",
-  adapter: vercel(),
+  adapter: vercel({
+    functionPerRoute: true,
+    maxDuration: 60,
+    runtime: "nodejs18.x",
+  }),
   site: "https://example.com",
   i18n: {
     defaultLocale: "en",
